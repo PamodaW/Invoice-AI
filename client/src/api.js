@@ -5,3 +5,14 @@ export async function getInvoices() {
   if (!res.ok) throw new Error(`Request failed (${res.status})`);
   return res.json();
 }
+
+export async function createInvoice(invoice) {
+  const res = await fetch(`${API_URL}/invoices`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(invoice),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
+  return data;
+}

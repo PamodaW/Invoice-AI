@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getInvoices } from "./api";
 import InvoiceList from "./InvoiceList";
+import InvoiceForm from "./InvoiceForm";
 
 function App() {
   const [invoices, setInvoices] = useState([]);
@@ -17,6 +18,7 @@ function App() {
   return (
     <div style={{ maxWidth: 800, margin: "0 auto", padding: 24 }}>
       <h1>Invoices</h1>
+      <InvoiceForm onCreated={(inv) => setInvoices((prev) => [...prev, inv])} />
       {loading && <p>Loading...</p>}
       {error && <p>Could not load invoices: {error}</p>}
       {!loading && !error && <InvoiceList invoices={invoices} />}
