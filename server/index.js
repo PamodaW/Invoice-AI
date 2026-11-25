@@ -1,13 +1,10 @@
 const express = require("express");
 const cors = require("cors");
+const db = require("./db");
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-
-// In-memory store (replaced by a database later)
-const invoices = [];
-let nextId = 1;
 
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
@@ -15,7 +12,8 @@ app.get("/health", (req, res) => {
 
 // List all invoices
 app.get("/invoices", (req, res) => {
-  res.json(invoices);
+  const rows = db.prepare("SELECT * FROM invoices ORDER BY id").all();
+  res.json(rows);
 });
 
 // Create an invoice
@@ -32,15 +30,13 @@ app.post("/invoices", (req, res) => {
     return res.status(400).json({ error: "dueDate must be a valid date" });
   }
 
-  const invoice = {
-    id: nextId++,
-    client: client.trim(),
-    amount,
-    dueDate,
-    status: "unpaid",
-    createdAt: new Date().toISOString(),
-  };
-  invoices.push(invoice);
+  const createdAt = new Date().toISOString();
+  const result = db
+    .prepare("INSERT INTO invoices (client, amount, dueDate, createdAt) VALUES (?, ?, ?, ?)")
+    .run(client.trim(), amount, dueDate, createdAt);
+  const invoice = db
+    .prepare("SELECT * FROM invoices WHERE id = ?")
+    .get(result.lastInsertRowid);
   res.status(201).json(invoice);
 });
 
